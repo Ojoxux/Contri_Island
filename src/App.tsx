@@ -1,35 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useState } from 'react';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LandingPage } from './components/pages/LandingPage';
+import { DashboardPage } from './components/pages/DashboardPage';
+import { SettingsPage } from './components/pages/SettingsPage';
+import { useAuth } from './contexts/AuthContext';
 
-function App() {
-  const [count, setCount] = useState(0)
+const AppRoutes = () => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { user, login, logout } = useAuth();
+
+  const mockGoals = {
+    weekly: 30,
+    monthly: 100,
+  };
+
+  const mockProgress = {
+    weekly: 25,
+    monthly: 87,
+  };
+
+  const handleThemeToggle = () => {
+    setIsDarkMode((prev) => !prev);
+    document.documentElement.setAttribute(
+      'data-theme',
+      !isDarkMode ? 'dark' : 'light'
+    );
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className={isDarkMode ? 'dark' : ''}>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <LandingPage
+              onThemeToggle={handleThemeToggle}
+              isDarkMode={isDarkMode}
+              onLogin={login}
+            />
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage
+                user={user!}
+                goals={mockGoals}
+                progress={mockProgress}
+                onLogout={logout}
+                onUpdateGoals={() => {}}
+                onThemeToggle={handleThemeToggle}
+                isDarkMode={isDarkMode}
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage
+                user={user!}
+                onLogout={logout}
+                onThemeToggle={handleThemeToggle}
+                isDarkMode={isDarkMode}
+                onResetProgress={() => {}}
+                onDeleteAccount={() => {}}
+              />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
