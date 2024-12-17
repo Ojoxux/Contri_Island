@@ -4,15 +4,13 @@
 
 /* カスタムCSSの追加 */
 @layer base {
-
   /* 基本的なスタイル */
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased bg-base-100;
   }
 }
 
 @layer components {
-
   /* 再利用可能なコンポーネントスタイル */
   .btn-primary {
     @apply bg-primary text-white rounded-full hover:bg-primary-dark;
@@ -20,7 +18,6 @@
 }
 
 @layer utilities {
-
   /* カスタムユーティリティクラス */
   .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
