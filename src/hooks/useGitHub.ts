@@ -106,7 +106,13 @@ export const useGitHub = () => {
       const contributions = await githubService.getContributions(
         userData.login
       );
-      setStats(calculateStats(contributions.days));
+      const days = contributions.weeks.flatMap((week) =>
+        week.contributionDays.map((day) => ({
+          date: day.date,
+          count: day.contributionCount,
+        }))
+      );
+      setStats(calculateStats(days));
     } catch (err) {
       setError(
         err instanceof Error ? err : new Error('Unknown error occurred')
