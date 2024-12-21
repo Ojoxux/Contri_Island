@@ -12,13 +12,17 @@ export const Card = ({
   ...props
 }: CardProps) => {
   const variantClasses = {
-    default: 'card bg-base-100 shadow-xl',
-    bordered: 'card card-bordered bg-base-100',
-    compact: 'card card-compact bg-base-100 shadow-xl',
+    default: 'card bg-white/90 shadow-acnh border-2 border-acnh-green',
+    bordered: 'card bg-white/90 border-2 border-acnh-green',
+    compact:
+      'card card-compact bg-white/90 shadow-acnh border-2 border-acnh-green',
   };
 
   return (
-    <div className={`${variantClasses[variant]} ${className}`} {...props}>
+    <div
+      className={`${variantClasses[variant]} rounded-acnh ${className}`}
+      {...props}
+    >
       <div className="card-body">{children}</div>
     </div>
   );
