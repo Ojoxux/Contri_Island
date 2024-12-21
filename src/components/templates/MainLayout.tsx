@@ -20,7 +20,7 @@ export const MainLayout = ({
   isDarkMode,
 }: MainLayoutProps) => {
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-gradient-to-b from-acnh-green-light/30 to-acnh-mint/20">
       {user && (
         <DashboardHeader
           user={user}
