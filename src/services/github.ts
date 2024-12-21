@@ -4,13 +4,16 @@ import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { githubProvider } from '../config/firebase';
 
 interface ContributionDay {
+  contributionCount: number;
   date: string;
-  count: number;
+  color: string;
 }
 
 interface ContributionData {
-  total: number;
-  days: ContributionDay[];
+  totalContributions: number;
+  weeks: {
+    contributionDays: ContributionDay[];
+  }[];
 }
 
 export interface GitHubUserData {
@@ -23,8 +26,61 @@ export interface GitHubUserData {
   publicRepos: number;
 }
 
+export const fetchGitHubContributions = async (
+  accessToken: string
+): Promise<ContributionData> => {
+  try {
+    const octokit = new Octokit({
+      auth: accessToken,
+    });
+
+    // GraphQLクエリを使用して貢献データを取得
+    const query = `
+      query {
+        viewer {
+          contributionsCollection {
+            contributionCalendar {
+              totalContributions
+              weeks {
+                contributionDays {
+                  contributionCount
+                  date
+                  color
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await octokit.graphql(query);
+    console.log('GitHub API Response:', response);
+
+    const contributionCalendar = (response as any).viewer
+      .contributionsCollection.contributionCalendar;
+    return {
+      totalContributions: contributionCalendar.totalContributions,
+      weeks: contributionCalendar.weeks,
+    };
+  } catch (error) {
+    console.error('GitHub API Error:', error);
+    throw new Error('GitHubの貢献データの取得に失敗しました');
+  }
+};
+
+export const getContributionColor = (count: number): string => {
+  // 貢献度に応じて色を変更（より明るい草色）
+  if (count === 0) return '#EBEDF0'; // 貢献なし（薄いグレー）
+  if (count <= 3) return '#9BE9A8'; // 少ない貢献（明るい草色）
+  if (count <= 6) return '#40C463'; // 中程度の貢献（中間の草色）
+  if (count <= 9) return '#30A14E'; // 多い貢献（濃い草色）
+  return '#216E39'; // とても多い貢献（最も濃い草色）
+};
+
 class GitHubService {
   private octokit: Octokit | null = null;
+  private accessToken: string | null = null;
 
   private async getOctokit() {
     if (!this.octokit) {
@@ -32,21 +88,26 @@ class GitHubService {
       if (!currentUser) throw new Error('認証が必要です');
 
       try {
-        // 再認証を行ってトークンを取得
-        const result = await signInWithPopup(auth, githubProvider);
-        const credential = GithubAuthProvider.credentialFromResult(result);
-        const token = credential?.accessToken;
+        if (!this.accessToken) {
+          // GitHubで再認証を行い、新しいトークンを取得
+          const result = await signInWithPopup(auth, githubProvider);
+          const credential = GithubAuthProvider.credentialFromResult(result);
+          this.accessToken = credential?.accessToken ?? null;
 
-        if (!token) {
-          throw new Error('GitHubトークンの取得に失敗しました');
+          if (!this.accessToken) {
+            throw new Error('GitHubトークンの取得に失敗しました');
+          }
         }
 
         this.octokit = new Octokit({
-          auth: token,
+          auth: this.accessToken,
         });
       } catch (error) {
         console.error('GitHub token error:', error);
-        throw new Error('GitHubトークンの取得に失敗しました');
+        // トークンをクリアして次回再試行できるようにする
+        this.accessToken = null;
+        this.octokit = null;
+        throw error;
       }
     }
     return this.octokit;
@@ -78,6 +139,7 @@ class GitHubService {
                 contributionDays {
                   contributionCount
                   date
+                  color
                 }
               }
             }
@@ -96,14 +158,15 @@ class GitHubService {
       week.contributionDays.forEach((day: any) => {
         days.push({
           date: day.date,
-          count: day.contributionCount,
+          contributionCount: day.contributionCount,
+          color: day.color,
         });
       });
     });
 
     return {
-      total: calendar.totalContributions,
-      days,
+      totalContributions: calendar.totalContributions,
+      weeks: calendar.weeks,
     };
   }
 
