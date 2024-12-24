@@ -79,5 +79,5 @@ http://localhost:3000
 
 <div align="center">
   
-  Made with 💚 by Jou Okuyama
+  Made with 🏝️ by Jou Okuyama
 </div>
