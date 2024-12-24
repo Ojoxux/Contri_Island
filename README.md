@@ -71,16 +71,6 @@ http://localhost:3000
 - 🎨 島のカスタマイズ
 - 📱 レスポンシブデザイン
 
-## 🤝 コントリビューション
-
-バグ報告や機能提案は大歓迎です！以下の手順で貢献できます：
-
-1. このリポジトリをフォーク
-2. 新しいブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add some amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
-
 ## 📝 ライセンス
 
 このプロジェクトは MIT ライセンスの下で公開されています。
