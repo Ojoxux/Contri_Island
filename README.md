@@ -34,8 +34,8 @@
 1. リポジトリのクローン
 
 ```bash
-git clone https://github.com/your-username/github-contribution-island.git
-cd github-contribution-island
+git clone https://github.com/Ojoxux/Contri_Island.git
+cd Contri_Island.git
 ```
 
 2. 依存パッケージのインストール
@@ -60,7 +60,7 @@ npm run dev
 5. ブラウザで開く
 
 ```
-http://localhost:5173
+http://localhost:3000
 ```
 
 ## 🌈 機能
