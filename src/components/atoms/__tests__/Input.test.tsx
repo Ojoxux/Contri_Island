@@ -31,12 +31,14 @@ describe('Input', () => {
   });
 
   it('HTMLInputElement の属性が正しく渡されること', () => {
+    const handleChange = () => {};
     render(
       <Input
         type="email"
         placeholder="メールアドレス"
         required
         value="test@example.com"
+        onChange={handleChange}
       />
     );
     const input = screen.getByRole('textbox');
