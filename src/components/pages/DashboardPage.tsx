@@ -1,38 +1,40 @@
 import { MainLayout } from '../templates/MainLayout';
 import { StatsOverview } from '../organisms/StatsOverview';
 import { GoalSettingSection } from '../organisms/GoalSettingSection';
-import { useGitHub } from '../../hooks/useGitHub';
 import { Card } from '../atoms/Card';
+import { useStore } from '../../store/useStore';
+import { useGitHubStore } from '../../store/useGitHubStore';
+import { useEffect } from 'react';
 
 interface DashboardPageProps {
   user: {
     name: string;
     avatarUrl: string;
   };
-  goals: {
-    weekly: number;
-    monthly: number;
-  };
-  progress: {
-    weekly: number;
-    monthly: number;
-  };
   onLogout: () => void;
-  onUpdateGoals: (goals: { weekly: number; monthly: number }) => void;
   onThemeToggle: () => void;
   isDarkMode: boolean;
 }
 
 export const DashboardPage = ({
   user,
-  goals,
-  progress,
   onLogout,
-  onUpdateGoals,
   onThemeToggle,
   isDarkMode,
 }: DashboardPageProps) => {
-  const { loading, error, stats } = useGitHub();
+  const { goals, setGoals } = useStore();
+  const { stats, loading, error, fetchStats, userData, fetchUserData } =
+    useGitHubStore();
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  useEffect(() => {
+    if (userData) {
+      fetchStats(userData.login);
+    }
+  }, [userData, fetchStats]);
 
   if (loading) {
     return (
@@ -88,7 +90,7 @@ export const DashboardPage = ({
             weekly: stats?.weekly || 0,
             monthly: stats?.monthly || 0,
           }}
-          onUpdateGoals={onUpdateGoals}
+          onUpdateGoals={setGoals}
         />
       </div>
     </MainLayout>
