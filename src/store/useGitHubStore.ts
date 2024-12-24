@@ -22,49 +22,77 @@ interface GitHubStore {
   reset: () => void;
 }
 
-export const useGitHubStore = create<GitHubStore>((set) => ({
-  userData: null,
-  stats: null,
-  loading: false,
-  error: null,
-  fetchUserData: async () => {
+export const useGitHubStore = create<GitHubStore>((set) => {
+  // 初期データの取得
+  const initializeStore = async () => {
     try {
-      set({ loading: true, error: null });
       const userData = await githubService.getUserData();
       set({ userData });
+      if (userData?.login) {
+        const contributions = await githubService.getContributions(
+          userData.login
+        );
+        const days = contributions.weeks.flatMap((week) =>
+          week.contributionDays.map((day) => ({
+            date: day.date,
+            count: day.contributionCount,
+          }))
+        );
+        const stats = calculateStats(days);
+        set({ stats });
+      }
     } catch (err) {
       set({ error: err instanceof Error ? err : new Error('Unknown error') });
-    } finally {
-      set({ loading: false });
     }
-  },
-  fetchStats: async (username: string) => {
-    try {
-      set({ loading: true, error: null });
-      const contributions = await githubService.getContributions(username);
-      const days = contributions.weeks.flatMap((week) =>
-        week.contributionDays.map((day) => ({
-          date: day.date,
-          count: day.contributionCount,
-        }))
-      );
-      const stats = calculateStats(days);
-      set({ stats });
-    } catch (err) {
-      set({ error: err instanceof Error ? err : new Error('Unknown error') });
-    } finally {
-      set({ loading: false });
-    }
-  },
-  reset: () => {
-    set({
-      userData: null,
-      stats: null,
-      loading: false,
-      error: null,
-    });
-  },
-}));
+  };
+
+  // 初期化を実行
+  initializeStore();
+
+  return {
+    userData: null,
+    stats: null,
+    loading: false,
+    error: null,
+    fetchUserData: async () => {
+      try {
+        set({ loading: true, error: null });
+        const userData = await githubService.getUserData();
+        set({ userData });
+      } catch (err) {
+        set({ error: err instanceof Error ? err : new Error('Unknown error') });
+      } finally {
+        set({ loading: false });
+      }
+    },
+    fetchStats: async (username: string) => {
+      try {
+        set({ loading: true, error: null });
+        const contributions = await githubService.getContributions(username);
+        const days = contributions.weeks.flatMap((week) =>
+          week.contributionDays.map((day) => ({
+            date: day.date,
+            count: day.contributionCount,
+          }))
+        );
+        const stats = calculateStats(days);
+        set({ stats });
+      } catch (err) {
+        set({ error: err instanceof Error ? err : new Error('Unknown error') });
+      } finally {
+        set({ loading: false });
+      }
+    },
+    reset: () => {
+      set({
+        userData: null,
+        stats: null,
+        loading: false,
+        error: null,
+      });
+    },
+  };
+});
 
 // ユーティリティ関数
 function calculateStats(
