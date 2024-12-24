@@ -1,84 +1,82 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LandingPage } from './components/pages/LandingPage';
-import { DashboardPage } from './components/pages/DashboardPage';
-import { SettingsPage } from './components/pages/SettingsPage';
+import { IslandPage } from './components/pages/IslandPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
 
 const AppRoutes = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const { user, login, logout } = useAuth();
+  const { login, user, logout, loading, initialized } = useAuth();
 
-  const mockGoals = {
-    weekly: 30,
-    monthly: 100,
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('ログインエラー:', error);
+    }
   };
 
-  const mockProgress = {
-    weekly: 25,
-    monthly: 87,
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('ログアウトエラー:', error);
+    }
   };
 
   const handleThemeToggle = () => {
-    setIsDarkMode((prev) => !prev);
-    document.documentElement.setAttribute(
-      'data-theme',
-      !isDarkMode ? 'dark' : 'light'
-    );
+    setIsDarkMode(!isDarkMode);
   };
 
+  // 初期化前またはローディング中は待機
+  if (!initialized || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-acnh-beige">
+        <div className="loading loading-spinner loading-lg text-acnh-green" />
+      </div>
+    );
+  }
+
   return (
-    <div className={isDarkMode ? 'dark' : ''}>
+    <div className="min-h-screen bg-gray-50">
       <Routes>
         <Route
           path="/"
           element={
-            <LandingPage
-              onThemeToggle={handleThemeToggle}
-              isDarkMode={isDarkMode}
-              onLogin={login}
-            />
+            user && user.name && user.avatarUrl ? (
+              <Navigate to="/island" replace />
+            ) : (
+              <LandingPage
+                onLogin={handleLogin}
+                onThemeToggle={handleThemeToggle}
+                isDarkMode={isDarkMode}
+                isLoading={loading}
+              />
+            )
           }
         />
         <Route
-          path="/dashboard"
+          path="/island"
           element={
             <ProtectedRoute>
-              <DashboardPage
+              <IslandPage
                 user={user!}
-                goals={mockGoals}
-                progress={mockProgress}
-                onLogout={logout}
-                onUpdateGoals={() => {}}
+                onLogout={handleLogout}
                 onThemeToggle={handleThemeToggle}
                 isDarkMode={isDarkMode}
               />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <SettingsPage
-                user={user!}
-                onLogout={logout}
-                onThemeToggle={handleThemeToggle}
-                isDarkMode={isDarkMode}
-                onResetProgress={() => {}}
-                onDeleteAccount={() => {}}
-              />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
 };
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -86,6 +84,6 @@ function App() {
       </AuthProvider>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
