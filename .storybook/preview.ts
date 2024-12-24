@@ -1,16 +1,20 @@
 import type { Preview } from '@storybook/react';
+import { fn } from '@storybook/test';
 import React from 'react';
 import '../src/index.css';
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
     },
+  },
+  argTypes: {
+    onClick: { action: 'clicked' },
+    onChange: { action: 'changed' },
   },
   decorators: [
     (Story) =>
