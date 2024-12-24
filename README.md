@@ -88,7 +88,6 @@ http://localhost:3000
 ---
 
 <div align="center">
-  <img src="https://github.com/Ojoxux/GitHub-Contribution-Island/assets/your-asset-id/footer-image-id.png" width="300" alt="Footer Image">
   
   Made with 💚 by Jou Okuyama
 </div>
