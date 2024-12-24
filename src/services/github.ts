@@ -1,8 +1,4 @@
 import { Octokit } from '@octokit/rest';
-import { auth } from '../config/firebase';
-import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
-import { githubProvider } from '../config/firebase';
-import { getAuth } from 'firebase/auth';
 
 interface ContributionDay {
   contributionCount: number;
