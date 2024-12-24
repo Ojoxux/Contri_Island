@@ -1,6 +1,7 @@
 import { MainLayout } from '../templates/MainLayout';
 import { Card } from '../atoms/Card';
 import { Button } from '../atoms/Button';
+import { useStore, ThemePreset } from '../../store/useStore';
 
 interface SettingsPageProps {
   user: {
@@ -22,6 +23,10 @@ export const SettingsPage = ({
   onResetProgress,
   onDeleteAccount,
 }: SettingsPageProps) => {
+  const { theme, setThemePreset, setCustomColors } = useStore();
+
+  const themePresets: ThemePreset[] = ['default', 'ocean', 'forest', 'sunset'];
+
   return (
     <MainLayout
       user={user}
@@ -31,10 +36,10 @@ export const SettingsPage = ({
     >
       <div className="max-w-2xl mx-auto space-y-6">
         <Card>
-          <h2 className="text-xl font-bold mb-4">アカウント設定</h2>
+          <h2 className="text-xl font-bold mb-4">テーマ設定</h2>
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium mb-2">テーマ設定</h3>
+              <h3 className="font-medium mb-2">ダークモード</h3>
               <Button
                 variant="secondary"
                 onClick={onThemeToggle}
@@ -42,6 +47,54 @@ export const SettingsPage = ({
               >
                 {isDarkMode ? 'ライトモード' : 'ダークモード'}に切り替え
               </Button>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">テーマプリセット</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {themePresets.map((preset) => (
+                  <Button
+                    key={preset}
+                    variant={
+                      theme.currentPreset === preset ? 'primary' : 'ghost'
+                    }
+                    onClick={() => setThemePreset(preset)}
+                    className="capitalize"
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">カスタムカラー</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label">
+                    <span className="label-text">プライマリカラー</span>
+                  </label>
+                  <input
+                    type="color"
+                    value={theme.customColors.primary}
+                    onChange={(e) =>
+                      setCustomColors({ primary: e.target.value })
+                    }
+                    className="w-full h-10 rounded-lg cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="label">
+                    <span className="label-text">アクセントカラー</span>
+                  </label>
+                  <input
+                    type="color"
+                    value={theme.customColors.accent}
+                    onChange={(e) =>
+                      setCustomColors({ accent: e.target.value })
+                    }
+                    className="w-full h-10 rounded-lg cursor-pointer"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </Card>
