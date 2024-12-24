@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
 import { Icon } from '../Icon';
-import { describe, it, expect } from 'vitest';
 
 describe('Icon', () => {
   it('デフォルトの属性でレンダリングされること', () => {

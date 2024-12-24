@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { Card } from '../Card';
-import { describe, it, expect } from 'vitest';
 
 describe('Card', () => {
   it('子要素が正しくレンダリングされること', () => {
