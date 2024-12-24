@@ -2,6 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { auth } from '../config/firebase';
 import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { githubProvider } from '../config/firebase';
+import { getAuth } from 'firebase/auth';
 
 interface ContributionDay {
   contributionCount: number;
@@ -78,54 +79,59 @@ export const getContributionColor = (count: number): string => {
   return '#216E39'; // とても多い貢献（最も濃い草色）
 };
 
-class GitHubService {
+export class GitHubService {
   private octokit: Octokit | null = null;
   private accessToken: string | null = null;
 
-  private async getOctokit() {
-    if (!this.octokit) {
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error('認証が必要です');
-
-      try {
-        if (!this.accessToken) {
-          // GitHubで再認証を行い、新しいトークンを取得
-          const result = await signInWithPopup(auth, githubProvider);
-          const credential = GithubAuthProvider.credentialFromResult(result);
-          this.accessToken = credential?.accessToken ?? null;
-
-          if (!this.accessToken) {
-            throw new Error('GitHubトークンの取得に失敗しました');
-          }
-        }
-
-        this.octokit = new Octokit({
-          auth: this.accessToken,
-        });
-      } catch (error) {
-        console.error('GitHub token error:', error);
-        // トークンをクリアして次回再試行できるようにする
-        this.accessToken = null;
-        this.octokit = null;
-        throw error;
+  async getOctokit(): Promise<Octokit> {
+    const storedUser = sessionStorage.getItem('githubUser');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      if (userData.accessToken) {
+        this.accessToken = userData.accessToken;
+        this.octokit = new Octokit({ auth: userData.accessToken });
+        return this.octokit;
       }
     }
-    return this.octokit;
+
+    throw new Error('GitHub access token not found');
   }
 
   async getUserData(): Promise<GitHubUserData> {
-    const octokit = await this.getOctokit();
-    const { data } = await octokit.users.getAuthenticated();
+    try {
+      const octokit = await this.getOctokit();
+      const { data } = await octokit.rest.users.getAuthenticated();
 
-    return {
-      login: data.login,
-      name: data.name || data.login,
-      avatarUrl: data.avatar_url,
-      bio: data.bio || '',
-      followers: data.followers,
-      following: data.following,
-      publicRepos: data.public_repos,
-    };
+      // APIから取得した詳細情報を含むユーザーデータ
+      const userData = {
+        login: data.login,
+        name: data.name || data.login,
+        avatarUrl: data.avatar_url,
+        bio: data.bio || '',
+        followers: data.followers,
+        following: data.following,
+        publicRepos: data.public_repos,
+        accessToken: this.accessToken,
+      };
+
+      // セッションストレージを更新
+      const storedUser = sessionStorage.getItem('githubUser');
+      if (storedUser) {
+        const existingData = JSON.parse(storedUser);
+        sessionStorage.setItem(
+          'githubUser',
+          JSON.stringify({
+            ...existingData,
+            ...userData,
+          })
+        );
+      }
+
+      return userData;
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      throw error;
+    }
   }
 
   async getContributions(username: string): Promise<ContributionData> {
