@@ -1,11 +1,7 @@
-import '@testing-library/jest-dom';
+/// <reference types="vitest" />
+/// <reference types="@testing-library/jest-dom" />
 
 declare module 'vitest' {
-  interface Assertion<T = any> extends CustomMatchers<T> {}
-  interface AsymmetricMatchersContaining extends CustomMatchers<any> {}
-}
-
-interface CustomMatchers<R = unknown> {
-  toBeInTheDocument(): R;
-  toHaveClass(...classNames: string[]): R;
+  interface Assertion<T = any> extends jest.Matchers<void, T> {}
+  interface AsymmetricMatchersContaining extends jest.Matchers<void, any> {}
 }
