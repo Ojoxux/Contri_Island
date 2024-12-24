@@ -1,9 +1,8 @@
 import { MainLayout } from '../templates/MainLayout';
 import { GitHubLoginButton } from '../molecules/GitHubLoginButton';
 import { Card } from '../atoms/Card';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useEffect } from 'react';
 
 interface LandingPageProps {
   onLogin: () => Promise<void>;
@@ -18,20 +17,28 @@ export const LandingPage = ({
   onThemeToggle,
   isDarkMode,
 }: LandingPageProps) => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/island';
 
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-acnh-beige">
+        <div className="loading loading-spinner loading-lg text-acnh-green" />
+      </div>
+    );
+  }
+
+  // ユーザーが既にログインしている場合、島ページにリダイレクト
+  if (user) {
+    return <Navigate to={from} replace />;
+  }
 
   const handleLogin = async () => {
     try {
       await onLogin();
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('ログインに失敗しました:', error);
     }
   };
 
