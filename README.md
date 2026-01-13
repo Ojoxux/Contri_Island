@@ -4,7 +4,6 @@
 
 <div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-black?logo=three.js&logoColor=white)](https://threejs.org/)
@@ -117,12 +116,3 @@ chore: 📦 パッケージを更新
 ```
 
 ---
-
-## 📝 ライセンス
-
-このプロジェクトは MIT ライセンスの下で公開されています。
-
-<div align="center">
-  
-  Made with 🏝️ by Jou Okuyama
-</div>
